@@ -280,7 +280,3 @@ run **Sync Encodings** from the admin panel to regenerate all stored
 embeddings, since different models produce incompatible vector spaces.
 
 ---
-
-## Licence
-
-MIT — free to use, modify, and redistribute.
