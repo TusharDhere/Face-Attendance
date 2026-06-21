@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block page_title %}Students{% endblock %}
+
+{% block header_actions %}
+<div class="flex items-center gap-2">
+
+  <!-- Sync Encodings button -->
+  <button id="sync-btn" onclick="startSync()"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
+                 border border-slate-200 text-slate-600 hover:bg-slate-50
+                 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+    <svg id="sync-icon" class="w-4 h-4" fill="none" stroke="currentColor"
+         viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0
+               0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    </svg>
+    <span id="sync-label">Sync Encodings</span>
+  </button>
+
+  <!-- Add Student -->
+  <a href="{{ url_for('students.add_student') }}"
+     class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium
+            bg-slate-900 text-white hover:bg-slate-700 transition-colors">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 4v16m8-8H4" />
+    </svg>
+    Add Student
+  </a>
+
+</div>
+
+<!-- Toast notification -->
+<div id="toast"
+     class="hidden fixed bottom-6 right-6 z-50 flex items-center gap-3
+            px-4 py-3 rounded-xl text-sm border shadow-md max-w-xs">
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Search -->
+<div class="mb-4">
+  <input id="search" type="text"
+         placeholder="Search by name or ID…"
+         class="w-full max-w-sm px-3 py-2 text-sm border border-slate-200 rounded-lg
+                bg-white placeholder-slate-400 focus:outline-none focus:ring-2
+                focus:ring-slate-300"
+         oninput="filterTable(this.value)" />
+</div>
+
+<!-- Table -->
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+  {% if students %}
+  <table class="w-full text-sm" id="student-table">
+    <thead>
+      <tr class="bg-slate-50 border-b border-slate-200">
+        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Student</th>
+        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">ID</th>
+        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Major</th>
+        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Year</th>
+        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Attendance</th>
+        <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wide">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for s in students %}
+      <tr class="hover:bg-slate-50 transition-colors student-row"
+          data-search="{{ s.name|lower }} {{ s.id|lower }}">
+        <td class="px-5 py-3">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center
+                        text-xs font-semibold text-slate-600 shrink-0">
+              {{ s.name[:1].upper() if s.name else '?' }}
+            </div>
+            <span class="font-medium text-slate-900">{{ s.name }}</span>
+          </div>
+        </td>
+        <td class="px-5 py-3 font-mono text-xs text-slate-500">{{ s.id }}</td>
+        <td class="px-5 py-3 text-slate-600">{{ s.major or '—' }}</td>
+        <td class="px-5 py-3 text-slate-600">{{ s.year or '—' }}</td>
+        <td class="px-5 py-3">
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-100 rounded-full h-1.5">
+              <div class="h-1.5 rounded-full
+                          {% if s.pct >= 75 %}bg-green-400
+                          {% elif s.pct >= 50 %}bg-amber-400
+                          {% else %}bg-red-400{% endif %}"
+                   style="width:{{ s.pct }}%"></div>
+            </div>
+            <span class="text-xs
+                         {% if s.pct >= 75 %}text-green-600
+                         {% elif s.pct >= 50 %}text-amber-600
+                         {% else %}text-red-500{% endif %}">
+              {{ s.pct }}%
+            </span>
+          </div>
+        </td>
+        <td class="px-5 py-3 text-right">
+          <div class="flex items-center justify-end gap-2">
+            <a href="{{ url_for('students.edit_student', sid=s.id) }}"
+               class="px-3 py-1 text-xs border border-slate-200 rounded-md
+                      text-slate-600 hover:bg-slate-100 transition-colors">
+              Edit
+            </a>
+            <form method="POST"
+                  action="{{ url_for('students.delete_student', sid=s.id) }}"
+                  onsubmit="return confirm('Delete {{ s.name }}? This cannot be undone.')">
+              <button type="submit"
+                      class="px-3 py-1 text-xs border border-red-200 rounded-md
+                             text-red-600 bg-red-50 hover:bg-red-100 transition-colors">
+                Delete
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="px-5 py-3 border-t border-slate-100 bg-slate-50">
+    <p class="text-xs text-slate-400">{{ students|length }} student(s) total</p>
+  </div>
+  {% else %}
+  <div class="flex flex-col items-center justify-center py-20 text-slate-400">
+    <svg class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857
+               M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857
+               m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+    <p class="text-sm mb-3">No students yet.</p>
+    <a href="{{ url_for('students.add_student') }}"
+       class="text-sm text-slate-900 underline underline-offset-2">
+      Add the first student →
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ── Sync Encodings JS ──────────────────────────────────────────────────── -->
+<script>
+(function () {
+  let pollTimer = null;
+
+  window.startSync = function () {
+    const btn   = document.getElementById('sync-btn');
+    const label = document.getElementById('sync-label');
+    const icon  = document.getElementById('sync-icon');
+
+    btn.disabled = true;
+    label.textContent = 'Starting…';
+    icon.style.animation = 'spin 1s linear infinite';
+
+    // Add keyframe if not already present
+    if (!document.getElementById('spin-style')) {
+      const s = document.createElement('style');
+      s.id = 'spin-style';
+      s.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+      document.head.appendChild(s);
+    }
+
+    fetch('/admin/sync-encodings', { method: 'POST' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.error) {
+          showToast(data.error, 'warning');
+          resetBtn();
+        } else {
+          label.textContent = 'Syncing 0/…';
+          pollTimer = setInterval(pollStatus, 1500);
+        }
+      })
+      .catch(function (err) {
+        showToast('Network error: ' + err.message, 'error');
+        resetBtn();
+      });
+  };
+
+  function pollStatus() {
+    fetch('/admin/sync-status')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var label = document.getElementById('sync-label');
+        if (data.total > 0) {
+          label.textContent = 'Syncing ' + data.done + '/' + data.total + '…';
+        }
+        if (!data.running) {
+          clearInterval(pollTimer);
+          var ok   = (data.ok    || []).length;
+          var errs = (data.errors || []).length;
+          if (errs === 0) {
+            showToast('✓ Synced ' + ok + ' encoding(s) successfully.', 'success');
+          } else {
+            showToast('Synced ' + ok + ' OK · ' + errs + ' error(s). See console.', 'warning');
+            console.warn('[Sync] Errors:', data.errors);
+          }
+          resetBtn();
+        }
+      })
+      .catch(function () {
+        clearInterval(pollTimer);
+        showToast('Lost connection during sync.', 'error');
+        resetBtn();
+      });
+  }
+
+  function resetBtn() {
+    var btn   = document.getElementById('sync-btn');
+    var label = document.getElementById('sync-label');
+    var icon  = document.getElementById('sync-icon');
+    btn.disabled     = false;
+    label.textContent = 'Sync Encodings';
+    icon.style.animation = '';
+  }
+
+  function showToast(msg, type) {
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+
+    var base = 'fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 '
+             + 'rounded-xl text-sm border shadow-md max-w-xs ';
+    if (type === 'success') {
+      toast.className = base + 'bg-green-50 border-green-200 text-green-800';
+    } else if (type === 'error') {
+      toast.className = base + 'bg-red-50 border-red-200 text-red-800';
+    } else {
+      toast.className = base + 'bg-amber-50 border-amber-200 text-amber-800';
+    }
+
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(function () {
+      toast.className = 'hidden';
+    }, 6000);
+  }
+}());
+
+function filterTable(q) {
+  var lower = q.toLowerCase();
+  document.querySelectorAll('.student-row').forEach(function (row) {
+    row.style.display = row.dataset.search.includes(lower) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

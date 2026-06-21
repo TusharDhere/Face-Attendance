@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Face Attendance{% endblock %} — Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+  </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-700 antialiased">
+<div class="flex h-full">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside class="w-56 shrink-0 flex flex-col bg-white border-r border-slate-200">
+    <div class="h-14 flex items-center px-5 border-b border-slate-200">
+      <span class="text-sm font-semibold text-slate-900 tracking-tight">
+        Face Attendance
+      </span>
+    </div>
+
+    <nav class="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+
+      <!-- Main nav -->
+      {% set main_nav = [
+        ('attendance.dashboard',      'Dashboard',       'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'),
+        ('students.students_list',    'Students',        'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z'),
+        ('attendance.attendance_log', 'Attendance Log',  'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4'),
+      ] %}
+      {% for endpoint, label, icon_d in main_nav %}
+        {% set active = (request.endpoint == endpoint) %}
+        <a href="{{ url_for(endpoint) }}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm
+                  {% if active %}bg-slate-100 text-slate-900 font-medium
+                  {% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}
+                  transition-colors">
+          <svg class="w-4 h-4 shrink-0 {% if active %}text-slate-700{% else %}text-slate-400{% endif %}"
+               fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="1.5" d="{{ icon_d }}" />
+          </svg>
+          {{ label }}
+        </a>
+      {% endfor %}
+
+      <!-- Export section -->
+      <div class="pt-4 pb-1">
+        <p class="px-3 text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+          Export
+        </p>
+      </div>
+
+      <a href="{{ url_for('attendance.export_csv') }}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm
+                text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+        <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none"
+             stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586
+                   a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        CSV
+      </a>
+
+      <a href="{{ url_for('attendance.export_excel') }}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm
+                text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+        <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none"
+             stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586
+                   a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Excel
+      </a>
+
+      <a href="{{ url_for('attendance.export_pdf') }}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm
+                text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+        <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none"
+             stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0
+                   0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        PDF
+      </a>
+
+    </nav>
+
+    <!-- User + logout -->
+    <div class="shrink-0 border-t border-slate-200 px-4 py-3 flex items-center gap-2">
+      <div class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center
+                  justify-center text-xs font-semibold shrink-0">
+        {{ current_user.username[:1].upper() if current_user.is_authenticated else '?' }}
+      </div>
+      <span class="text-xs text-slate-600 truncate flex-1">
+        {{ current_user.username if current_user.is_authenticated else '' }}
+      </span>
+      <a href="{{ url_for('auth.logout') }}"
+         title="Sign out"
+         class="text-slate-400 hover:text-slate-700 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0
+                   01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────────────────── -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    <!-- Top bar -->
+    <header class="h-14 shrink-0 bg-white border-b border-slate-200
+                   flex items-center px-6 gap-4">
+      <h1 class="text-xl font-semibold text-slate-900">
+        {% block page_title %}{% endblock %}
+      </h1>
+      <div class="ml-auto flex items-center gap-2">
+        {% with messages = get_flashed_messages(with_categories=True) %}
+          {% for cat, msg in messages %}
+            <span class="text-xs px-3 py-1 rounded-full border
+                         {% if cat == 'error' %}bg-red-50 text-red-600 border-red-200
+                         {% else %}bg-green-50 text-green-700 border-green-200{% endif %}">
+              {{ msg }}
+            </span>
+          {% endfor %}
+        {% endwith %}
+        {% block header_actions %}{% endblock %}
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="flex-1 overflow-y-auto p-6">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+</div>
+</body>
+</html>

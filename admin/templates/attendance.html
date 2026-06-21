@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Attendance Log{% endblock %}
+{% block page_title %}Attendance Log{% endblock %}
+
+{% block header_actions %}
+<div class="flex items-center gap-2">
+  <a href="{{ url_for('attendance.export_csv',   month=month) }}"
+     class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
+            border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 10v6m0 0l-3-3m3 3l3-3" />
+    </svg>
+    CSV
+  </a>
+  <a href="{{ url_for('attendance.export_excel') }}"
+     class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
+            border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 17v-2m3 2v-4m3 4v-6" />
+    </svg>
+    Excel (all)
+  </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Month filter -->
+<div class="flex items-center gap-3 mb-5">
+  <label class="text-xs font-medium text-slate-500 uppercase tracking-wide">
+    Month
+  </label>
+  <form method="GET" action="{{ url_for('attendance.attendance_log') }}"
+        class="flex items-center gap-2">
+    <input type="month" name="month" value="{{ month }}"
+           class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg
+                  focus:outline-none focus:ring-2 focus:ring-slate-300 bg-white"
+           onchange="this.form.submit()" />
+  </form>
+
+  <span class="text-xs text-slate-400">
+    {{ records|length }} record(s) for
+    {% if month %}
+      {{ month | replace('-', ' ') }}
+    {% endif %}
+  </span>
+</div>
+
+<!-- Records table -->
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+  {% if records %}
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="bg-slate-50 border-b border-slate-200">
+        {% for h in ['Student ID', 'Name', 'Date', 'Time', 'Status'] %}
+        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+          {{ h }}
+        </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for r in records %}
+      <tr class="hover:bg-slate-50 transition-colors">
+        <td class="px-5 py-3 font-mono text-xs text-slate-500">
+          {{ r.get('student_id', '—') }}
+        </td>
+        <td class="px-5 py-3 text-slate-900 font-medium">
+          {{ r.get('name', '—') }}
+        </td>
+        <td class="px-5 py-3 text-slate-600">
+          {% set d = r.get('date', '') %}
+          {% if d %}
+            {{ d[8:10] }}/{{ d[5:7] }}/{{ d[:4] }}
+          {% else %}—{% endif %}
+        </td>
+        <td class="px-5 py-3 text-slate-600">
+          {{ r.get('time', '—') }}
+        </td>
+        <td class="px-5 py-3">
+          {% set status = r.get('status', '') %}
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full
+                       text-xs font-medium
+                       {% if status == 'Present' %}
+                         bg-green-100 text-green-700
+                       {% elif status == 'Late' %}
+                         bg-amber-100 text-amber-700
+                       {% else %}
+                         bg-slate-100 text-slate-600
+                       {% endif %}">
+            {% if status == 'Present' %}✓{% elif status == 'Late' %}⏱{% endif %}
+            {{ status or '—' }}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="px-5 py-3 border-t border-slate-100 bg-slate-50">
+    <p class="text-xs text-slate-400">{{ records|length }} record(s)</p>
+  </div>
+
+  {% else %}
+  <div class="flex flex-col items-center justify-center py-20 text-slate-400">
+    <svg class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
+               M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+    </svg>
+    <p class="text-sm">No attendance records for this month.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

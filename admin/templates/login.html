@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — Face Attendance Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="h-full bg-slate-50 flex items-center justify-center px-4">
+
+  <div class="w-full max-w-sm">
+
+    <!-- Logo / app name -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl
+                  bg-slate-900 text-white mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804
+                   M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h1 class="text-xl font-semibold text-slate-900">Face Attendance</h1>
+      <p class="text-sm text-slate-500 mt-0.5">Admin Panel</p>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-8">
+
+      <!-- Error alert -->
+      {% if error %}
+      <div class="mb-5 flex items-start gap-2.5 px-4 py-3
+                  bg-red-50 border border-red-200 rounded-xl">
+        <svg class="w-4 h-4 mt-0.5 shrink-0 text-red-500" fill="none"
+             stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732
+                   4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <p class="text-sm text-red-700">{{ error }}</p>
+      </div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next', '')) }}">
+
+        <!-- Username -->
+        <div class="mb-4">
+          <label for="username"
+                 class="block text-xs font-medium text-slate-500 uppercase
+                        tracking-wide mb-1.5">
+            Username
+          </label>
+          <input
+            id="username" name="username" type="text"
+            required autofocus autocomplete="username"
+            class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl
+                   focus:outline-none focus:ring-2 focus:ring-slate-300
+                   placeholder-slate-300 bg-white"
+            placeholder="admin"
+          />
+        </div>
+
+        <!-- Password -->
+        <div class="mb-6">
+          <label for="password"
+                 class="block text-xs font-medium text-slate-500 uppercase
+                        tracking-wide mb-1.5">
+            Password
+          </label>
+          <input
+            id="password" name="password" type="password"
+            required autocomplete="current-password"
+            class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl
+                   focus:outline-none focus:ring-2 focus:ring-slate-300 bg-white"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="w-full py-2.5 px-4 text-sm font-medium rounded-xl
+                 bg-slate-900 text-white hover:bg-slate-700
+                 focus:outline-none focus:ring-2 focus:ring-slate-400
+                 transition-colors">
+          Sign in
+        </button>
+
+      </form>
+    </div>
+
+    <!-- Footer note -->
+    <p class="text-center text-xs text-slate-400 mt-4">
+      Session expires after 8 hours.
+      Set credentials via <code class="font-mono">ADMIN_USER</code>
+      and <code class="font-mono">ADMIN_PASS</code> in <code class="font-mono">.env</code>.
+    </p>
+
+  </div>
+
+</body>
+</html>

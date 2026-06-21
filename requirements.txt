@@ -1,0 +1,32 @@
+# ── Face detection + recognition (Python 3.10 / 3.11 / 3.12 / 3.14 compatible) ──
+# InsightFace replaces face_recognition + dlib (no C++ compiler required)
+insightface>=0.7.3
+onnxruntime>=1.17.0          # CPU inference — swap for onnxruntime-gpu on CUDA machines
+
+# ── Computer vision ───────────────────────────────────────────────────────────
+opencv-python>=4.9.0
+mediapipe>=0.10.0            # liveness: blink EAR + head-yaw via Tasks API FaceLandmarker
+
+# ── Firebase (Realtime DB + Firestore only — Storage NOT used) ───────────────
+firebase-admin>=6.4.0
+
+# ── Photo storage (replaces Firebase Storage — free 25 GB tier) ──────────────
+cloudinary>=1.36.0
+
+# ── GUI kiosk ─────────────────────────────────────────────────────────────────
+dearpygui>=1.11.0
+
+# ── Web admin ─────────────────────────────────────────────────────────────────
+flask>=3.0.0
+flask-login>=0.6.3
+
+# ── Configuration ─────────────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+
+# ── Export ────────────────────────────────────────────────────────────────────
+openpyxl>=3.1.0
+weasyprint>=62.0
+
+# ── Removed ───────────────────────────────────────────────────────────────────
+# face_recognition   ← required dlib, no Python 3.12+ wheels
+# dlib               ← requires CMake + C++ build tools; unmaintained on 3.14

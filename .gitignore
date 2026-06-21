@@ -1,0 +1,33 @@
+# Secrets — never commit these
+serviceAccountKey.json
+.env
+
+# Legacy encoding pickle (replaced by Firestore)
+EncodeFile.p
+*.p
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Build artefacts
+dist/
+build/
+*.egg-info/
+
+# Logs
+*.log

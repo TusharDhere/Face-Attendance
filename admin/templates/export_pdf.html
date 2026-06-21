@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    /* ── Page layout ─────────────────────────────────────────────────────── */
+    @page {
+      size: A4 landscape;
+      margin: 18mm 20mm 14mm 20mm;
+
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: -apple-system, Helvetica, Arial, sans-serif;
+        font-size: 7pt;
+        color: #94a3b8;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 9pt;
+      color: #0f172a;
+      background: #ffffff;
+    }
+
+    /* ── Report header ───────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #0f172a;
+    }
+    .header-left h1 {
+      font-size: 16pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 3px;
+    }
+    .header-left p {
+      font-size: 8pt;
+      color: #64748b;
+    }
+    .header-right {
+      text-align: right;
+      font-size: 8pt;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    /* ── Table ────────────────────────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead th {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 7px 12px;
+      text-align: left;
+      font-size: 7.5pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    tbody tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+    tbody td {
+      padding: 5px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+    td.mono {
+      font-family: 'Courier New', Courier, monospace;
+      color: #64748b;
+      font-size: 8pt;
+    }
+    td.name {
+      font-weight: 500;
+    }
+
+    /* ── Status badge ────────────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 99px;
+      font-size: 7.5pt;
+      font-weight: 600;
+    }
+    .badge-present { background: #dcfce7; color: #15803d; }
+    .badge-late    { background: #fef3c7; color: #d97706; }
+    .badge-other   { background: #f1f5f9; color: #475569; }
+
+    /* ── Summary row ─────────────────────────────────────────────────────── */
+    .summary {
+      margin-top: 12px;
+      display: flex;
+      gap: 24px;
+      font-size: 8pt;
+      color: #64748b;
+    }
+    .summary span { font-weight: 600; color: #0f172a; }
+
+    /* ── Footer bar ──────────────────────────────────────────────────────── */
+    .footer {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 7.5pt;
+      color: #94a3b8;
+    }
+
+    /* ── Empty state ─────────────────────────────────────────────────────── */
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: #94a3b8;
+      font-size: 9pt;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Attendance Report</h1>
+      <p>Period: {{ month }} &nbsp;·&nbsp; {{ records|length }} record(s)</p>
+    </div>
+    <div class="header-right">
+      <p>Face Attendance System</p>
+      <p>Generated: {{ generated }}</p>
+    </div>
+  </div>
+
+  <!-- ── Table ──────────────────────────────────────────────────────────── -->
+  {% if records %}
+  <table>
+    <thead>
+      <tr>
+        <th style="width:13%">Student ID</th>
+        <th style="width:30%">Name</th>
+        <th style="width:16%">Date</th>
+        <th style="width:13%">Time</th>
+        <th style="width:14%">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in records %}
+      <tr>
+        <td class="mono">{{ r.get('student_id', '—') }}</td>
+        <td class="name">{{ r.get('name', '—') }}</td>
+        <td class="mono">
+          {%- set d = r.get('date', '') -%}
+          {%- if d -%}{{ d[8:10] }}/{{ d[5:7] }}/{{ d[:4] }}{%- else -%}—{%- endif -%}
+        </td>
+        <td class="mono">{{ r.get('time', '—') }}</td>
+        <td>
+          {%- set st = r.get('status', '') -%}
+          {%- if st == 'Present' -%}
+            <span class="badge badge-present">✓ Present</span>
+          {%- elif st == 'Late' -%}
+            <span class="badge badge-late">⏱ Late</span>
+          {%- else -%}
+            <span class="badge badge-other">{{ st or '—' }}</span>
+          {%- endif -%}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- ── Summary stats ──────────────────────────────────────────────────── -->
+  {%- set present_count = records | selectattr('status', 'equalto', 'Present') | list | length -%}
+  {%- set unique_students = records | map(attribute='student_id') | unique | list | length -%}
+  <div class="summary">
+    <p>Total records: <span>{{ records|length }}</span></p>
+    <p>Unique students: <span>{{ unique_students }}</span></p>
+    <p>Present: <span>{{ present_count }}</span></p>
+  </div>
+
+  {% else %}
+  <div class="empty">No attendance records found for {{ month }}.</div>
+  {% endif %}
+
+  <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+  <div class="footer">
+    <span>Confidential — Face Attendance System</span>
+    <span>{{ month }}</span>
+  </div>
+
+</body>
+</html>
